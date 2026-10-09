@@ -1,0 +1,19 @@
+{
+  "name": "docs-for-claude",
+  "description": "Converts markdown documents to themed .docx and PDF files using pandoc and a bundled reference document.",
+  "version": "0.1.0",
+  "author": {
+    "name": "realbucksavage",
+    "url": "https://github.com/realbucksavage"
+  },
+  "keywords": [
+    "docx",
+    "markdown",
+    "pandoc",
+    "documents",
+    "report"
+  ],
+  "homepage": "https://github.com/realbucksavage/docs-for-claude",
+  "repository": "https://github.com/realbucksavage/docs-for-claude",
+  "license": "MIT"
+}

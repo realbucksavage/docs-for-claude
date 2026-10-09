@@ -1,0 +1,14 @@
+{
+  "name": "docs-for-claude",
+  "owner": {
+    "name": "realbucksavage",
+    "url": "https://github.com/realbucksavage"
+  },
+  "plugins": [
+    {
+      "name": "docs-for-claude",
+      "source": "./",
+      "description": "Converts markdown documents to themed .docx and PDF files using pandoc and a bundled reference document."
+    }
+  ]
+}
