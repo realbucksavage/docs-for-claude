@@ -11,6 +11,7 @@ Claude Code plugin that converts markdown documents (case studies, reports) to s
 ## Requirements
 
 - [pandoc](https://pandoc.org/), from a package manager or a [static binary](https://github.com/jgm/pandoc/releases). The scripts use `$PANDOC`, then `PATH`, then `skills/render-themed-docs/assets/bin/pandoc`.
+- Python 3 (standard library only), for `hide_bookmarks.py`
 - For PDF output, one of: LibreOffice (`soffice`), or the `typst` Python package (`pip install typst`)
 - Optional, for visual verification: PyMuPDF
 - Optional, to regenerate the theme: Python 3 with `python-docx`

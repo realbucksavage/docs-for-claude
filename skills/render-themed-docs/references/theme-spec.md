@@ -12,6 +12,7 @@ The values in `assets/tokens.json` (colors, fonts, margins) and `assets/build_re
 | H2 (section) font | Calibri, 15pt, bold, accent |
 | H3 (sub-section) font | Calibri, 12pt, bold, muted |
 | Bullets (`Compact`, `List Bullet`) | Calibri, 11pt, ink, left-aligned |
+| Tables (`Table`) | no borders; header row bold, ink, tint fill; every second body row band fill (`colors.band`, default ink blended 93% toward white) |
 | Figure (`Captioned Figure`) | centered |
 | Figure caption (`Image Caption`) | Calibri, 9pt, italic, muted, centered |
 | Page margins | 2.2cm top/bottom, 2.4cm left/right |

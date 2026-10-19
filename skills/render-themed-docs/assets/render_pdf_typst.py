@@ -37,6 +37,13 @@ def find_pandoc():
              f"(or place it at {HERE / 'bin' / 'pandoc'}).")
 
 
+def mix(color, other, ratio):
+    """Blend '#RRGGBB' color toward other by ratio, 0..1; same as build_reference_docx.py."""
+    a = [int(color.lstrip('#')[i:i + 2], 16) for i in (0, 2, 4)]
+    b = [int(other.lstrip('#')[i:i + 2], 16) for i in (0, 2, 4)]
+    return '#' + ''.join(f"{round(x + (y - x) * ratio):02X}" for x, y in zip(a, b))
+
+
 def font_list(primary, fallback):
     return "(" + ", ".join(f'"{f}"' for f in [primary, *fallback]) + ")"
 
@@ -46,6 +53,7 @@ def style_rules(t):
     ink, accent, muted = c["ink"], c["accent"], c["muted"]
     tint = c.get("tint") or accent
     rule = c.get("rule") or ink
+    band = c.get("band") or mix(ink, "#FFFFFF", 0.93)
     heading = font_list(f.get("heading", f["body"]), SANS_FALLBACK)
     mono = font_list(f.get("mono", "Consolas"), MONO_FALLBACK)
     return f'''
@@ -77,7 +85,8 @@ def style_rules(t):
   above: 6pt, below: 10pt, stroke: (left: 2.25pt + rgb("{accent}")),
   text(size: 10.5pt, style: "italic", fill: rgb("{muted}"), it.body))
 
-#set table(stroke: none, inset: 6pt, fill: (x, y) => if y == 0 {{ rgb("{tint}") }} else {{ none }})
+#set table(stroke: none, inset: 6pt, fill: (x, y) =>
+  if y == 0 {{ rgb("{tint}") }} else if calc.even(y) {{ rgb("{band}") }} else {{ none }})
 #show table.cell.where(y: 0): set text(weight: "bold")
 
 #show figure.caption: set text(size: 9pt, style: "italic", fill: rgb("{muted}"))

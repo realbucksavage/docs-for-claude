@@ -11,8 +11,8 @@ Usage:
     python3 build_reference_docx.py [--tokens tokens.json] [--out reference.docx]
 
 Design tokens (colors, fonts, margins) are read from tokens.json next to this
-script unless --tokens is given. "tint" and "rule" are optional; when absent they
-are derived from "accent" and "ink". Writes reference.docx next to this script
+script unless --tokens is given. "tint", "rule" and "band" are optional; when absent
+they are derived from "accent" and "ink". Writes reference.docx next to this script
 unless --out is given.
 """
 import argparse
@@ -35,7 +35,7 @@ BASE_DOCX = HERE / "_refbase.docx"
 # Design tokens — see references/theme-spec.md for the full rationale.
 # Populated by load_tokens() from tokens.json.
 INK = ACCENT = MUTED = None   # RGBColor
-INK_HEX = ACCENT_HEX = TINT = RULE = None   # 'RRGGBB'
+INK_HEX = ACCENT_HEX = TINT = RULE = BAND = None   # 'RRGGBB'
 FONT_BODY = FONT_HEADING = FONT_MONO = None
 MARGINS = {}
 
@@ -55,7 +55,7 @@ def _mix(hex_color, other, ratio):
 
 
 def load_tokens(path):
-    global INK, ACCENT, MUTED, INK_HEX, ACCENT_HEX, TINT, RULE
+    global INK, ACCENT, MUTED, INK_HEX, ACCENT_HEX, TINT, RULE, BAND
     global FONT_BODY, FONT_HEADING, FONT_MONO, MARGINS
     t = json.loads(Path(path).read_text())
     c = t["colors"]
@@ -63,6 +63,7 @@ def load_tokens(path):
     INK, ACCENT, MUTED = (RGBColor.from_string(h) for h in (INK_HEX, ACCENT_HEX, muted_hex))
     TINT = _hex(c["tint"]) if c.get("tint") else _mix(ACCENT_HEX, "FFFFFF", 0.9)
     RULE = _hex(c["rule"]) if c.get("rule") else _mix(INK_HEX, "FFFFFF", 0.85)
+    BAND = _hex(c["band"]) if c.get("band") else _mix(INK_HEX, "FFFFFF", 0.93)
     f = t["fonts"]
     FONT_BODY, FONT_HEADING = f["body"], f.get("heading", f["body"])
     FONT_MONO = f.get("mono", "Consolas")
@@ -244,12 +245,34 @@ def main():
     except KeyError:
         pass
 
-    # Table — pandoc emits tblLook firstRow="1", so a firstRow conditional
-    # format is what actually highlights a header row. The base style already
-    # has a firstRow element carrying only a bottom border; extend that one
-    # rather than appending a second, which Word would not merge.
+    # Table — pandoc emits tblLook firstRow="1" noHBand="0", so firstRow and
+    # band2Horz conditional formats are what style the header row and the
+    # alternating body rows. The base style already has a firstRow element
+    # carrying only a bottom border; extend that one rather than appending a
+    # second, which Word would not merge. No borders anywhere.
     try:
         tbl = styles['Table']
+
+        # no table or cell borders
+        tblPr = tbl.element.find(qn('w:tblPr'))
+        if tblPr is None:
+            tblPr = docx.oxml.OxmlElement('w:tblPr')
+            tbl.element.append(tblPr)
+        band_size = docx.oxml.OxmlElement('w:tblStyleRowBandSize')
+        band_size.set(qn('w:val'), '1')
+        tblPr.insert(0, band_size)
+        borders = docx.oxml.OxmlElement('w:tblBorders')
+        for side in ('top', 'left', 'bottom', 'right', 'insideH', 'insideV'):
+            b = docx.oxml.OxmlElement(f'w:{side}')
+            b.set(qn('w:val'), 'nil')
+            borders.append(b)
+        # schema order: tblStyleRowBandSize, ..., tblInd, tblBorders, ..., tblCellMar
+        cell_mar = tblPr.find(qn('w:tblCellMar'))
+        if cell_mar is not None:
+            cell_mar.addprevious(borders)
+        else:
+            tblPr.append(borders)
+
         firstRow = None
         for el in tbl.element.findall(qn('w:tblStylePr')):
             if el.get(qn('w:type')) == 'firstRow':
@@ -271,16 +294,31 @@ def main():
         tcol.set(qn('w:val'), INK_HEX)
         rPr.append(tcol)
 
-        # tinted header fill, keeping the base bottom border
+        # tinted header fill, dropping the base bottom border
         tcPr = firstRow.find(qn('w:tcPr'))
         if tcPr is None:
             tcPr = docx.oxml.OxmlElement('w:tcPr')
             firstRow.append(tcPr)
+        for old in tcPr.findall(qn('w:tcBorders')):
+            tcPr.remove(old)
         shd = docx.oxml.OxmlElement('w:shd')
         shd.set(qn('w:val'), 'clear')
         shd.set(qn('w:color'), 'auto')
         shd.set(qn('w:fill'), TINT)
         tcPr.insert(0, shd)
+
+        # alternating body rows: the first row below the header stays white,
+        # every second row gets the band fill
+        band = docx.oxml.OxmlElement('w:tblStylePr')
+        band.set(qn('w:type'), 'band2Horz')
+        bandPr = docx.oxml.OxmlElement('w:tcPr')
+        bshd = docx.oxml.OxmlElement('w:shd')
+        bshd.set(qn('w:val'), 'clear')
+        bshd.set(qn('w:color'), 'auto')
+        bshd.set(qn('w:fill'), BAND)
+        bandPr.append(bshd)
+        band.append(bandPr)
+        tbl.element.append(band)
     except KeyError:
         pass
 

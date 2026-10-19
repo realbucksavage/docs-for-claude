@@ -11,6 +11,7 @@ The theme is driven by `assets/tokens.json` (colors, fonts, page margins). To ma
 | `colors.muted` | H3, H5, captions, callout text |
 | `colors.tint` (optional) | table header fill. Default: accent blended 90% toward white |
 | `colors.rule` (optional) | code-block left rule. Default: ink blended 85% toward white |
+| `colors.band` (optional) | fill of alternating table rows. Default: ink blended 93% toward white |
 | `fonts.body` / `fonts.heading` / `fonts.mono` | body and lists / title and H1 / code |
 | `margins_cm.top/bottom/left/right` | page margins |
 

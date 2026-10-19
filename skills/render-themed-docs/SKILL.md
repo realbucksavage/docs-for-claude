@@ -28,12 +28,14 @@ pandoc "<input.md>" \
   --reference-doc="<this-skill-dir>/assets/reference.docx" \
   --resource-path="<directory containing input.md>" \
   -o "<output.docx>"
+python3 "<this-skill-dir>/assets/hide_bookmarks.py" "<output.docx>"
 ```
 
 Notes:
 
 - `--resource-path` matters whenever the markdown references images with relative paths (`![...](images/diagram.png)`) — set it to the markdown file's own directory (or wherever those relative paths should resolve from) or the images won't be found.
 - `--from=markdown+smart` turns straight quotes/hyphens into typographic ones (curly quotes, em dashes) — worth keeping for a document meant to look finished.
+- `hide_bookmarks.py` renames the bookmarks pandoc creates for headings and other identifiers to start with `_`, which Word treats as hidden, and updates internal links to match. Without it, the bookmarks show in Word when "Show bookmarks" is on. `render.sh` runs it automatically.
 - Find `<this-skill-dir>` from wherever this SKILL.md is loaded from (for a plugin install, under the plugin's `skills/render-themed-docs/` directory).
 
 ## PDF output
@@ -55,7 +57,7 @@ The theme uses Calibri and Calibri Light. If a font is not installed, both engin
 
 ## Markdown authoring conventions this theme expects
 
-The theme styles pandoc's own docx output styles directly (Heading 1/2/3, Compact, Captioned Figure, Image Caption, etc.) — no pandoc filter or Lua script involved. For it to look right:
+The theme styles pandoc's own docx output styles directly (Heading 1/2/3, Compact, Captioned Figure, Image Caption, etc.) — no pandoc filter or Lua script involved. The only post-processing step is `hide_bookmarks.py`. For it to look right:
 
 - **Exactly one `# H1`, at the top of the file, as the document title.** Heading 1 is styled to *be* the title (centered, larger, with a rule underneath) — see `references/theme-spec.md` for why. Don't also pass `--metadata title=...`; that produces a second, duplicate title above the H1.
 - **`## H2` for section headers**, **`### H3`** for sub-sections within a section.

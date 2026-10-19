@@ -2,7 +2,7 @@
 # Render a markdown file with the theme to .docx and/or .pdf.
 # Usage: render.sh <input.md> [docx|pdf|both] [output-dir] [auto|soffice|typst]
 #
-# The .docx is built with pandoc and reference.docx.
+# The .docx is built with pandoc and reference.docx; hide_bookmarks.py then hides its bookmarks.
 # pandoc is taken from $PANDOC, PATH, or assets/bin/pandoc; exit status 127 means it was not found.
 # PDF engines:
 #   soffice  converts the themed .docx with LibreOffice (exact match with the .docx)
@@ -59,6 +59,7 @@ if [ "$format" != "pdf" ] || [ "${engine}" = "soffice" ]; then
     --reference-doc="$here/reference.docx" \
     --resource-path="$src_dir" \
     -o "$docx"
+  python3 "$here/hide_bookmarks.py" "$docx"
 fi
 
 if [ "$format" != "docx" ]; then
