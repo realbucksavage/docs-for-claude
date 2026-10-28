@@ -249,11 +249,11 @@ def main():
     # band2Horz conditional formats are what style the header row and the
     # alternating body rows. The base style already has a firstRow element
     # carrying only a bottom border; extend that one rather than appending a
-    # second, which Word would not merge. No borders anywhere.
+    # second, which Word would not merge. Thin RULE-colored grid on all sides.
     try:
         tbl = styles['Table']
 
-        # no table or cell borders
+        # thin grid in the rule color
         tblPr = tbl.element.find(qn('w:tblPr'))
         if tblPr is None:
             tblPr = docx.oxml.OxmlElement('w:tblPr')
@@ -264,7 +264,10 @@ def main():
         borders = docx.oxml.OxmlElement('w:tblBorders')
         for side in ('top', 'left', 'bottom', 'right', 'insideH', 'insideV'):
             b = docx.oxml.OxmlElement(f'w:{side}')
-            b.set(qn('w:val'), 'nil')
+            b.set(qn('w:val'), 'single')
+            b.set(qn('w:sz'), '4')
+            b.set(qn('w:space'), '0')
+            b.set(qn('w:color'), RULE)
             borders.append(b)
         # schema order: tblStyleRowBandSize, ..., tblInd, tblBorders, ..., tblCellMar
         cell_mar = tblPr.find(qn('w:tblCellMar'))
@@ -294,7 +297,7 @@ def main():
         tcol.set(qn('w:val'), INK_HEX)
         rPr.append(tcol)
 
-        # tinted header fill, dropping the base bottom border
+        # tinted header fill, dropping the base bottom border (the grid covers it)
         tcPr = firstRow.find(qn('w:tcPr'))
         if tcPr is None:
             tcPr = docx.oxml.OxmlElement('w:tcPr')

@@ -85,7 +85,7 @@ def style_rules(t):
   above: 6pt, below: 10pt, stroke: (left: 2.25pt + rgb("{accent}")),
   text(size: 10.5pt, style: "italic", fill: rgb("{muted}"), it.body))
 
-#set table(stroke: none, inset: 6pt, fill: (x, y) =>
+#set table(stroke: 0.5pt + rgb("{rule}"), inset: 6pt, fill: (x, y) =>
   if y == 0 {{ rgb("{tint}") }} else if calc.even(y) {{ rgb("{band}") }} else {{ none }})
 #show table.cell.where(y: 0): set text(weight: "bold")
 
